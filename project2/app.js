@@ -1,6 +1,6 @@
 /**
  * app.js
- * Controller for the Movie Recommendation System.
+ * Cinematic UI controller for the Movie Recommendation System.
  */
 
 import { MOVIES, RecommenderEngine } from './movieRecommender.js';
@@ -10,19 +10,23 @@ const state = {
     engine: new RecommenderEngine(),
     userRatings: {},
     selectedGenre: 'all',
+    selectedLanguage: 'all',
+    selectedCountry: 'all',
     algorithm: 'collaborative-user',
     metric: 'cosine'
   }
 };
 
+// Initialize empty ratings
 MOVIES.forEach(m => {
   state.recommender.userRatings[m.id] = null;
 });
 
-// Seed default initial ratings to make it instantly visual
-state.recommender.userRatings[1] = 5; // Interstellar
-state.recommender.userRatings[3] = 4; // The Matrix
-state.recommender.userRatings[13] = 1; // La La Land
+// Seed default ratings for visual instantaneity
+state.recommender.userRatings[4] = 5;  // Interstellar
+state.recommender.userRatings[15] = 5; // Dangal
+state.recommender.userRatings[28] = 4; // Your Name
+state.recommender.userRatings[31] = 2; // Amélie
 
 document.addEventListener('DOMContentLoaded', () => {
   initMovieRecommender();
@@ -32,6 +36,7 @@ function initMovieRecommender() {
   renderMovieCards();
   calculateAndRenderRecommendations();
 
+  // Engine Control Bindings
   const recAlgorithm = document.getElementById('rec-algorithm');
   const recMetric = document.getElementById('rec-metric');
   
@@ -39,7 +44,7 @@ function initMovieRecommender() {
     state.recommender.algorithm = e.target.value;
     const metricGroup = recMetric.closest('.control-group');
     if (e.target.value === 'content-genre') {
-      metricGroup.style.opacity = '0.4';
+      metricGroup.style.opacity = '0.3';
       recMetric.disabled = true;
     } else {
       metricGroup.style.opacity = '1';
@@ -53,6 +58,7 @@ function initMovieRecommender() {
     calculateAndRenderRecommendations();
   });
 
+  // Filter Bindings: Genre Buttons
   const genreBtns = document.querySelectorAll('.genre-btn');
   genreBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -61,6 +67,20 @@ function initMovieRecommender() {
       state.recommender.selectedGenre = btn.getAttribute('data-genre');
       filterMoviesList();
     });
+  });
+
+  // Filter Bindings: Dropdown Selects
+  const filterLang = document.getElementById('filter-language');
+  const filterCountry = document.getElementById('filter-country');
+
+  filterLang.addEventListener('change', (e) => {
+    state.recommender.selectedLanguage = e.target.value;
+    filterMoviesList();
+  });
+
+  filterCountry.addEventListener('change', (e) => {
+    state.recommender.selectedCountry = e.target.value;
+    filterMoviesList();
   });
 }
 
@@ -73,31 +93,56 @@ function renderMovieCards() {
     card.className = 'movie-card';
     card.setAttribute('data-id', movie.id);
     card.setAttribute('data-genre', movie.genre);
+    card.setAttribute('data-language', movie.language);
+    card.setAttribute('data-country', movie.country);
 
     const rating = state.recommender.userRatings[movie.id];
 
     card.innerHTML = `
-      <div class="movie-poster">${movie.icon}</div>
-      <div class="movie-info">
-        <span class="movie-genre">${movie.genre}</span>
-        <h4 class="movie-title">${movie.title}</h4>
-        <p class="movie-desc">${movie.desc}</p>
-      </div>
-      <div class="movie-rating">
-        <div class="stars" data-movie-id="${movie.id}">
-          ${[1, 2, 3, 4, 5].map(star => `
-            <span class="star ${rating && star <= rating ? 'filled' : ''}" data-value="${star}">★</span>
-          `).join('')}
+      <!-- Movie Poster -->
+      <div class="movie-poster-container">
+        <img src="${movie.poster}" alt="${movie.title}" class="movie-poster-img" loading="lazy">
+        
+        <!-- Hover Overlay Details -->
+        <div class="movie-hover-overlay">
+          <span class="overlay-meta">${movie.genre}</span>
+          <h4 class="overlay-title">${movie.title}</h4>
+          <div class="overlay-info">
+            <span>📅 ${movie.year}</span>
+            <span>🌍 ${movie.country}</span>
+            <span>🗣️ ${movie.language}</span>
+          </div>
+          <p class="overlay-desc">${movie.desc}</p>
+          <span class="overlay-director">Director: ${movie.director}</span>
         </div>
-        <button class="clear-rating" data-movie-id="${movie.id}" style="${rating ? 'display:block' : 'display:none'}">Clear</button>
+      </div>
+      
+      <!-- Card Footer (Always Visible) -->
+      <div class="movie-card-footer">
+        <h4 class="movie-card-title" title="${movie.title}">${movie.title}</h4>
+        <div class="movie-card-meta">
+          <span>${movie.genre}</span>
+          <span>${movie.language} &bull; ${movie.country}</span>
+        </div>
+        
+        <!-- Ratings stars -->
+        <div class="movie-card-rating">
+          <div class="stars" data-movie-id="${movie.id}">
+            ${[1, 2, 3, 4, 5].map(star => `
+              <span class="star ${rating && star <= rating ? 'filled' : ''}" data-value="${star}">★</span>
+            `).join('')}
+          </div>
+          <button class="clear-rating" data-movie-id="${movie.id}" style="${rating ? 'display:block' : 'display:none'}">Clear</button>
+        </div>
       </div>
     `;
 
     container.appendChild(card);
   });
 
-  const starsContainer = container.querySelectorAll('.stars');
-  starsContainer.forEach(stars => {
+  // Bind Star Clicks
+  const starsContainers = container.querySelectorAll('.stars');
+  starsContainers.forEach(stars => {
     const movieId = parseInt(stars.getAttribute('data-movie-id'));
     const starSpans = stars.querySelectorAll('.star');
 
@@ -123,6 +168,7 @@ function renderMovieCards() {
     });
   });
 
+  // Bind Clear Buttons
   const clearBtns = container.querySelectorAll('.clear-rating');
   clearBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -137,15 +183,27 @@ function renderMovieCards() {
       calculateAndRenderRecommendations();
     });
   });
+
+  filterMoviesList();
 }
 
 function filterMoviesList() {
   const selectedGenre = state.recommender.selectedGenre;
+  const selectedLanguage = state.recommender.selectedLanguage;
+  const selectedCountry = state.recommender.selectedCountry;
+
   const cards = document.querySelectorAll('.movie-card');
 
   cards.forEach(card => {
     const genre = card.getAttribute('data-genre');
-    if (selectedGenre === 'all' || genre === selectedGenre) {
+    const language = card.getAttribute('data-language');
+    const country = card.getAttribute('data-country');
+
+    const genreMatch = (selectedGenre === 'all' || genre === selectedGenre);
+    const langMatch = (selectedLanguage === 'all' || language === selectedLanguage);
+    const countryMatch = (selectedCountry === 'all' || country === selectedCountry);
+
+    if (genreMatch && langMatch && countryMatch) {
       card.style.display = 'flex';
     } else {
       card.style.display = 'none';
@@ -170,8 +228,12 @@ function calculateAndRenderRecommendations() {
   container.innerHTML = '';
 
   const recList = results.recommendations;
-  if (recList.length === 0) {
-    container.innerHTML = `<div class="no-recs">Your rated movies list is empty. Rate items to view recommendations!</div>`;
+  const activeRatedIds = Object.keys(ratings).filter(id => ratings[id] !== null).map(Number);
+
+  if (activeRatedIds.length === 0) {
+    container.innerHTML = `<div class="no-recs">Your rated list is empty. Rate movies to build your personalized feed!</div>`;
+  } else if (recList.length === 0) {
+    container.innerHTML = `<div class="no-recs">No further recommendations available. You have rated all items!</div>`;
   } else {
     recList.slice(0, 5).forEach((rec, idx) => {
       const item = document.createElement('div');
@@ -180,8 +242,8 @@ function calculateAndRenderRecommendations() {
       item.innerHTML = `
         <div class="rec-item-rank">${idx + 1}</div>
         <div class="rec-item-info">
-          <div class="rec-item-title">${rec.movie.icon} ${rec.movie.title}</div>
-          <div class="rec-item-genre">${rec.movie.genre}</div>
+          <div class="rec-item-title" title="${rec.movie.title}">${rec.movie.title}</div>
+          <div class="rec-item-genre">${rec.movie.genre} &bull; ${rec.movie.language} (${rec.movie.year})</div>
         </div>
         <div class="rec-item-score">
           <div class="rec-item-val">${rec.score.toFixed(1)}</div>
@@ -208,16 +270,16 @@ function renderSimilarityMatrix(similarities) {
     let colorStyle = 'background-color: rgba(255, 255, 255, 0.02);';
     if (state.recommender.algorithm !== 'content-genre') {
       if (simVal > 0) {
-        colorStyle = `background-color: rgba(0, 242, 254, ${Math.min(0.8, simVal * 0.7)}); border-color: rgba(0, 242, 254, ${simVal});`;
+        colorStyle = `background-color: rgba(245, 197, 24, ${Math.min(0.8, simVal * 0.7)}); border-color: rgba(245, 197, 24, ${simVal}); color: #000;`;
       } else if (simVal < 0) {
-        colorStyle = `background-color: rgba(239, 68, 68, ${Math.min(0.8, Math.abs(simVal) * 0.7)}); border-color: rgba(239, 68, 68, ${Math.abs(simVal)});`;
+        colorStyle = `background-color: rgba(229, 9, 20, ${Math.min(0.8, Math.abs(simVal) * 0.7)}); border-color: rgba(229, 9, 20, ${Math.abs(simVal)}); color: #fff;`;
       }
     }
 
     cell.setAttribute('style', colorStyle);
     cell.innerHTML = `
       <span class="sim-user">U${idx + 1}</span>
-      <span class="sim-val" style="color: ${Math.abs(simVal) > 0.4 ? '#000' : '#fff'}">${state.recommender.algorithm === 'content-genre' ? 'N/A' : simVal.toFixed(2)}</span>
+      <span class="sim-val" style="color: ${state.recommender.algorithm === 'content-genre' ? 'var(--text-muted)' : (Math.abs(simVal) > 0.4 && simVal > 0 ? '#000' : '#fff')}">${state.recommender.algorithm === 'content-genre' ? 'N/A' : simVal.toFixed(2)}</span>
     `;
 
     cell.title = `${peer.name}: similarity coefficient = ${simVal.toFixed(3)}`;

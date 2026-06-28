@@ -3,39 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aura Movie Recommender - Recommendation Engine</title>
+  <title>Aura Cinema - Global Movie Recommender</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
-    
-    <!-- Top header bar -->
-    <header class="top-bar">
+  <!-- Cinematic Top Navigation Header -->
+  <header class="cinema-header">
+    <div class="header-container">
       <div class="brand">
-        <div class="logo-icon"></div>
-        <span class="brand-name">Aura<span>Recommend</span></span>
+        <div class="cinema-logo-icon">🎬</div>
+        <span class="cinema-brand-name">AURA<span>CINEMA</span></span>
       </div>
-      <div class="project-info">
-        <a href="http://127.0.0.1:8000" class="back-link">&larr; Back to Portal</a>
+      <div class="header-actions">
+        <a href="http://127.0.0.1:8000" class="back-btn">&larr; Back to Portal</a>
         <span class="badge">AI PROJECT 2</span>
-        <span class="badge-accent">RECOMMENDER ENGINE</span>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main class="main-content">
-      <div class="recommender-grid">
-        
-        <!-- Movie Database Rating List -->
-        <div class="panel ratings-panel">
-          <div class="panel-header-sticky">
-            <h3>Movie Database</h3>
-            <p>Rate movies below using 1-5 stars. The system will calculate and update recommendations instantly.</p>
-            
-            <div class="genre-filters">
-              <button class="genre-btn active" data-genre="all">All Genres</button>
+  <main class="cinema-main">
+    <div class="workspace-grid">
+      
+      <!-- Left Section: Global Movie Library -->
+      <section class="library-section">
+        <div class="section-header">
+          <h2>Global Movie Database</h2>
+          <p>Rate movies below to personalize your recommendation feed in real-time.</p>
+        </div>
+
+        <!-- Filter Grid -->
+        <div class="filters-container">
+          <!-- Genre Filters -->
+          <div class="filter-group">
+            <label>Genre</label>
+            <div class="genre-buttons">
+              <button class="genre-btn active" data-genre="all">All</button>
               <button class="genre-btn" data-genre="Sci-Fi">Sci-Fi</button>
               <button class="genre-btn" data-genre="Action">Action</button>
               <button class="genre-btn" data-genre="Drama">Drama</button>
@@ -43,63 +48,110 @@
             </div>
           </div>
 
-          <div class="movie-list" id="movies-container">
-            <!-- Movie cards injected dynamically -->
+          <!-- Dropdown Selects for Language & Country -->
+          <div class="select-filters">
+            <div class="select-group">
+              <label for="filter-language">Language</label>
+              <select id="filter-language">
+                <option value="all">All Languages</option>
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Korean">Korean</option>
+                <option value="Japanese">Japanese</option>
+                <option value="French">French</option>
+                <option value="Spanish">Spanish</option>
+                <option value="Italian">Italian</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Mandarin">Mandarin</option>
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label for="filter-country">Country</label>
+              <select id="filter-country">
+                <option value="all">All Countries</option>
+                <option value="India">India</option>
+                <option value="USA">USA</option>
+                <option value="South Korea">South Korea</option>
+                <option value="Japan">Japan</option>
+                <option value="France">France</option>
+                <option value="Spain">Spain</option>
+                <option value="Italy">Italy</option>
+                <option value="Brazil">Brazil</option>
+                <option value="UK">UK</option>
+                <option value="Mexico">Mexico</option>
+                <option value="Taiwan">Taiwan</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- Recommendation output & settings -->
-        <div class="recommender-sidebar">
+        <!-- Movies Cards Grid -->
+        <div id="movies-container" class="movies-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Right Section: Recommender Engine & Dashboard -->
+      <section class="dashboard-section">
+        
+        <!-- Algorithm Controls Panel -->
+        <div class="panel engine-controls">
+          <h3>Recommendation Settings</h3>
           
-          <!-- Rec Engine Controls -->
-          <div class="panel controls-panel">
-            <h3>Engine Configuration</h3>
-            <hr class="divider">
-            
+          <div class="control-row">
             <div class="control-group">
-              <label for="rec-algorithm">Similarity Algorithm</label>
+              <label for="rec-algorithm">Algorithm</label>
               <select id="rec-algorithm">
-                <option value="collaborative-user">User-User Collaborative Filtering</option>
-                <option value="content-genre">Content-Based Filtering (Genre Vectors)</option>
+                <option value="collaborative-user">User-User Collaborative</option>
+                <option value="content-genre">Content-Based (Genre Profile)</option>
               </select>
             </div>
 
             <div class="control-group">
-              <label for="rec-metric">Correlation Metric</label>
+              <label for="rec-metric">Metric</label>
               <select id="rec-metric">
                 <option value="cosine">Cosine Similarity</option>
-                <option value="pearson">Pearson Correlation Coefficient</option>
+                <option value="pearson">Pearson Correlation</option>
               </select>
             </div>
           </div>
-
-          <!-- Top Recommendations Feed -->
-          <div class="panel rec-feed-panel">
-            <h3>Your Personalized Feed</h3>
-            <p class="section-subtitle">Real-time suggestions calculated based on your ratings</p>
-            <hr class="divider">
-            
-            <div class="recommendations-container" id="recommendations-container">
-              <!-- Dynamic recommendation items -->
-            </div>
-          </div>
-
-          <!-- Peer Similarity Heatmap -->
-          <div class="panel similarity-panel">
-            <h3>Neighbourhood Matrix</h3>
-            <p class="section-subtitle">Similarity scores between You and peer database profiles</p>
-            <div class="similarity-grid" id="similarity-grid">
-              <!-- Dynamic matrix rows -->
-            </div>
-          </div>
-
         </div>
-      </div>
-    </main>
-  </div>
-  
-  <!-- Modules -->
-  <script src="movieRecommender.js" type="module"></script>
-  <script src="app.js" type="module"></script>
+
+        <!-- Personalized Recommendations Feed -->
+        <div class="panel recommendation-feed">
+          <h3>Your Personalized Feed</h3>
+          <p class="panel-subtitle">Top 5 recommendations matching your profile</p>
+          <div id="recommendations-container" class="recommendations-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Collaborative Neighbourhood Heatmap -->
+        <div class="panel similarity-neighborhood">
+          <h3>User Neighbourhood Matrix</h3>
+          <p class="panel-subtitle">Pearson/Cosine similarity coefficients against database profiles</p>
+          
+          <div class="neighborhood-container">
+            <div id="similarity-grid" class="similarity-grid">
+              <!-- Dynamically populated -->
+            </div>
+            <div class="peer-profiles-legend">
+              <div><span class="legend-badge">U1</span> Alex (Sci-Fi & Anime)</div>
+              <div><span class="legend-badge">U2</span> Sarah (Romance & Euro)</div>
+              <div><span class="legend-badge">U3</span> Marcus (Action & Bollywood)</div>
+              <div><span class="legend-badge">U4</span> Elena (Cinephile)</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="cinema-footer">
+    <p>&copy; 2026 Aura Cinema Sandbox &bull; Sourced from IMDb & Wikipedia open datasets</p>
+  </footer>
 </body>
 </html>
