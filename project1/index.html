@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Stock Modeller - Indian Stock Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top header bar -->
+    <header class="top-bar">
+      <div class="brand">
+        <div class="logo-icon"></div>
+        <span class="brand-name">Aura<span>Stock</span></span>
+      </div>
+      <div class="project-info">
+        <a href="../index.html" class="back-link">&larr; Back to Portal</a>
+        <span class="badge">AI PROJECT 1</span>
+        <span class="badge-accent">INDIA STOCK FORECASTER</span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      
+      <!-- Real-Time Ticker Banner -->
+      <section class="ticker-banner panel">
+        <div class="ticker-selectors">
+          <div class="select-wrapper">
+            <label for="stock-preset">Select Stock</label>
+            <select id="stock-preset">
+              <option value="RELIANCE.NS">Reliance Industries (RELIANCE.NS)</option>
+              <option value="TCS.NS">Tata Consultancy Services (TCS.NS)</option>
+              <option value="HDFCBANK.NS">HDFC Bank Ltd. (HDFCBANK.NS)</option>
+              <option value="INFY.NS">Infosys Ltd. (INFY.NS)</option>
+              <option value="ICICIBANK.NS">ICICI Bank Ltd. (ICICIBANK.NS)</option>
+              <option value="SBIN.NS">State Bank of India (SBIN.NS)</option>
+              <option value="^NSEI">Nifty 50 Index (^NSEI)</option>
+            </select>
+          </div>
+          <div class="input-wrapper">
+            <label for="custom-ticker">Custom NSE/BSE Ticker</label>
+            <div class="search-box">
+              <input type="text" id="custom-ticker" placeholder="e.g. TATAMOTORS.NS">
+              <button id="search-btn" class="btn">Search</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="quote-display" id="quote-display">
+          <div class="quote-loading">Loading live quote...</div>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        
+        <!-- Main Chart Area -->
+        <div class="panel main-chart-panel">
+          <div class="panel-header">
+            <div class="header-text">
+              <h3>Stock Price Forecasting Canvas</h3>
+              <p>Historical closing prices (cyan) vs Regression fits and forecasts (purple)</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="stockChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Configuration Sidebar -->
+        <div class="panel settings-panel">
+          <h3>Model Configuration</h3>
+          <hr class="divider">
+          
+          <div class="control-group">
+            <label for="model-type">Model Algorithm</label>
+            <select id="model-type">
+              <option value="linear">Linear Regression (1st Degree)</option>
+              <option value="polynomial-2">Quadratic Regression (2nd Degree)</option>
+              <option value="polynomial-3">Cubic Regression (3rd Degree)</option>
+              <option value="ema">Exponential Moving Average (EMA)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <div class="slider-label">
+              <label for="lookback-days">Training Window (Lookback)</label>
+              <span id="lookback-val">60 Days</span>
+            </div>
+            <input type="range" id="lookback-days" min="20" max="100" value="60">
+          </div>
+
+          <div class="control-group">
+            <div class="slider-label">
+              <label for="forecast-days">Prediction Horizon</label>
+              <span id="forecast-val">15 Days</span>
+            </div>
+            <input type="range" id="forecast-days" min="5" max="30" value="15">
+          </div>
+
+          <div class="info-note">
+            <p><strong>Note:</strong> Training window operates on historical trading days. The prediction horizon projects future prices (skipping weekends).</p>
+          </div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-row">
+          <div class="metric-card">
+            <span class="metric-title">Goodness of Fit (R²)</span>
+            <h2 id="metric-r2">0.89</h2>
+            <p class="metric-desc">Percentage of variance explained by model.</p>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">Mean Squared Error (MSE)</span>
+            <h2 id="metric-mse">12.45</h2>
+            <p class="metric-desc">Lower values represent tighter fits.</p>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">Directional Bias</span>
+            <h2 id="metric-bias" class="text-green">BULLISH</h2>
+            <p class="metric-desc">Determined by final predicted slope.</p>
+          </div>
+        </div>
+
+        <!-- Mathematical Explanation Panel -->
+        <div class="panel full-width-panel math-panel">
+          <h3>Model Formulations & Mathematical Insights</h3>
+          <div class="math-columns">
+            <div class="math-col">
+              <h4>Ordinary Least Squares (OLS)</h4>
+              <p>Linear models are solved using classical regression matrix techniques:</p>
+              <div class="math-equation font-mono">
+                &beta; = (X<sup>T</sup> X)<sup>-1</sup> X<sup>T</sup> y
+              </div>
+              <p>This computes the slope and intercept parameters directly without numerical gradient steps, guaranteeing global minimum loss.</p>
+            </div>
+            <div class="math-col">
+              <h4>Polynomial Curve Fitting</h4>
+              <p>For degree d, we map feature t to dynamic Vandermonde vectors:</p>
+              <div class="math-equation font-mono">
+                y &approx; &beta;<sub>0</sub> + &beta;<sub>1</sub>t + &beta;<sub>2</sub>t<sup>2</sup> + ... + &beta;<sub>d</sub>t<sup>d</sup>
+              </div>
+              <p>This allows the model to capture non-linear bends, inflection points, and market momentum changes.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+  
+  <!-- Modules -->
+  <script src="stockPredictor.js" type="module"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

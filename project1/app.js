@@ -31,35 +31,28 @@ function initStockPredictor() {
   const customTickerInput = document.getElementById('custom-ticker');
   const searchBtn = document.getElementById('search-btn');
 
-  // 1. Initialize Chart
   setupStockChart();
 
-  // 2. Fetch stock data function
   const fetchStockData = async (symbol) => {
     state.stock.selectedSymbol = symbol;
     renderQuoteLoading();
 
     try {
+      // Targets root URL path `/api/stock` relative to the server
       const response = await fetch(`/api/stock?symbol=${encodeURIComponent(symbol)}`);
       if (!response.ok) {
         throw new Error(`Symbol "${symbol}" not found or failed to load.`);
       }
       const data = await response.json();
       
-      // Load historical data in engine
       state.stock.engine.setHistoricalData(data.prices);
-
-      // Render Quote card
       renderQuoteCard(data);
-
-      // Trigger forecast calculations
       updatePredictions();
     } catch (err) {
       renderQuoteError(err.message);
     }
   };
 
-  // 3. Update predictions on parameter changes
   const updatePredictions = () => {
     const engine = state.stock.engine;
     if (engine.history.length === 0) return;
@@ -81,18 +74,15 @@ function initStockPredictor() {
     updateStockMetrics(result.metrics);
   };
 
-  // Event Listeners for parameter sliders
   modelTypeSelect.addEventListener('change', updatePredictions);
   lookbackSlider.addEventListener('input', updatePredictions);
   forecastSlider.addEventListener('input', updatePredictions);
 
-  // Preset stock selection
   stockPresetSelect.addEventListener('change', (e) => {
-    customTickerInput.value = ''; // clear search box
+    customTickerInput.value = '';
     fetchStockData(e.target.value);
   });
 
-  // Custom stock search
   const performSearch = () => {
     const symbol = customTickerInput.value.trim().toUpperCase();
     if (symbol) {
@@ -105,7 +95,6 @@ function initStockPredictor() {
     if (e.key === 'Enter') performSearch();
   });
 
-  // Initial Fetch (Reliance Industries)
   fetchStockData(state.stock.selectedSymbol);
 }
 
@@ -184,10 +173,8 @@ function updateStockChartData(predictions, lookback) {
   const engine = state.stock.engine;
   const chart = state.stock.chart;
 
-  // X-axis: actual dates
   const labels = engine.history.map(h => h.date);
   
-  // Append future predicted dates
   const forecastLength = predictions.length - lookback;
   for (let i = 0; i < forecastLength; i++) {
     const idx = lookback + i;
@@ -195,11 +182,8 @@ function updateStockChartData(predictions, lookback) {
   }
   
   chart.data.labels = labels;
-
-  // History dataset
   chart.data.datasets[0].data = engine.history.map(h => h.price);
 
-  // Prediction dataset (pad historical gap)
   const padCount = engine.history.length - lookback;
   const predData = Array(padCount).fill(null);
   predictions.forEach(p => {
@@ -226,8 +210,6 @@ function updateStockMetrics(metrics) {
     biasElement.className = 'text-red';
   }
 }
-
-// --- RENDERING QUOTE DETAILS ---
 
 function renderQuoteLoading() {
   const container = document.getElementById('quote-display');

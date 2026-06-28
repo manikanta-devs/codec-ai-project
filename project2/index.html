@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Movie Recommender - Recommendation Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top header bar -->
+    <header class="top-bar">
+      <div class="brand">
+        <div class="logo-icon"></div>
+        <span class="brand-name">Aura<span>Recommend</span></span>
+      </div>
+      <div class="project-info">
+        <a href="../index.html" class="back-link">&larr; Back to Portal</a>
+        <span class="badge">AI PROJECT 2</span>
+        <span class="badge-accent">RECOMMENDER ENGINE</span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="recommender-grid">
+        
+        <!-- Movie Database Rating List -->
+        <div class="panel ratings-panel">
+          <div class="panel-header-sticky">
+            <h3>Movie Database</h3>
+            <p>Rate movies below using 1-5 stars. The system will calculate and update recommendations instantly.</p>
+            
+            <div class="genre-filters">
+              <button class="genre-btn active" data-genre="all">All Genres</button>
+              <button class="genre-btn" data-genre="Sci-Fi">Sci-Fi</button>
+              <button class="genre-btn" data-genre="Action">Action</button>
+              <button class="genre-btn" data-genre="Drama">Drama</button>
+              <button class="genre-btn" data-genre="Romance">Romance</button>
+            </div>
+          </div>
+
+          <div class="movie-list" id="movies-container">
+            <!-- Movie cards injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Recommendation output & settings -->
+        <div class="recommender-sidebar">
+          
+          <!-- Rec Engine Controls -->
+          <div class="panel controls-panel">
+            <h3>Engine Configuration</h3>
+            <hr class="divider">
+            
+            <div class="control-group">
+              <label for="rec-algorithm">Similarity Algorithm</label>
+              <select id="rec-algorithm">
+                <option value="collaborative-user">User-User Collaborative Filtering</option>
+                <option value="content-genre">Content-Based Filtering (Genre Vectors)</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="rec-metric">Correlation Metric</label>
+              <select id="rec-metric">
+                <option value="cosine">Cosine Similarity</option>
+                <option value="pearson">Pearson Correlation Coefficient</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Top Recommendations Feed -->
+          <div class="panel rec-feed-panel">
+            <h3>Your Personalized Feed</h3>
+            <p class="section-subtitle">Real-time suggestions calculated based on your ratings</p>
+            <hr class="divider">
+            
+            <div class="recommendations-container" id="recommendations-container">
+              <!-- Dynamic recommendation items -->
+            </div>
+          </div>
+
+          <!-- Peer Similarity Heatmap -->
+          <div class="panel similarity-panel">
+            <h3>Neighbourhood Matrix</h3>
+            <p class="section-subtitle">Similarity scores between You and peer database profiles</p>
+            <div class="similarity-grid" id="similarity-grid">
+              <!-- Dynamic matrix rows -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Modules -->
+  <script src="movieRecommender.js" type="module"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

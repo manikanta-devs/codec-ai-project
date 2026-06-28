@@ -3,8 +3,6 @@
  * Client-side regression modelling.
  */
 
-// --- MATRIX MATH UTILITIES (for Polynomial Regression) ---
-
 function transpose(matrix) {
   const rows = matrix.length;
   const cols = matrix[0].length;
@@ -79,17 +77,11 @@ function invertMatrix(matrix) {
   return aug.map(row => row.slice(n));
 }
 
-// --- MODEL FITTER CLASS ---
-
 export class StockEngine {
   constructor() {
-    this.history = []; // [{ date: string, price: number }]
+    this.history = [];
   }
 
-  /**
-   * Sets the historical data from the API response
-   * @param {Array} apiPrices - list of { date, close }
-   */
   setHistoricalData(apiPrices) {
     this.history = apiPrices.map((p, i) => ({
       day: i + 1,
@@ -98,17 +90,10 @@ export class StockEngine {
     }));
   }
 
-  /**
-   * Fits a model to historical data and predicts the future horizon.
-   * @param {string} modelType - 'linear', 'polynomial-2', 'polynomial-3', 'ema'
-   * @param {number} lookback - number of historical days to train on
-   * @param {number} forecast - number of future days to predict
-   */
   fitAndPredict(modelType, lookback, forecast) {
     const trainData = this.history.slice(-lookback);
     const n = trainData.length;
     
-    // Feature normalization: t starts at 1
     const tOffset = trainData[0].day;
     const t = trainData.map(d => d.day - tOffset + 1);
     const y = trainData.map(d => d.price);
@@ -183,7 +168,6 @@ export class StockEngine {
         isForecast: false
       }));
 
-      // Project into the future
       const lastDay = trainData[trainData.length - 1].day;
       const lastDate = new Date(trainData[trainData.length - 1].date);
       
@@ -192,7 +176,6 @@ export class StockEngine {
         const targetDay = lastDay + i;
         const normTime = targetDay - tOffset + 1;
         
-        // Advance date skipping weekends (Saturday = 6, Sunday = 0)
         do {
           nextDate.setDate(nextDate.getDate() + 1);
         } while (nextDate.getDay() === 0 || nextDate.getDay() === 6);
@@ -239,7 +222,6 @@ export class StockEngine {
         isForecast: false
       }));
 
-      // Project into future using local momentum (drift of last 5 days EMA)
       let localDrift = 0;
       if (n > 5) {
         const lastFew = emaFit.slice(-5);
