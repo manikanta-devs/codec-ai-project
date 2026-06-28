@@ -38,12 +38,74 @@ function initStockPredictor() {
     renderQuoteLoading();
 
     try {
-      // Targets root URL path `/api/stock` relative to the server
-      const response = await fetch(`/api/stock?symbol=${encodeURIComponent(symbol)}`);
-      if (!response.ok) {
-        throw new Error(`Symbol "${symbol}" not found or failed to load.`);
+      let data = null;
+      // Try local python API first
+      try {
+        const response = await fetch(`/api/stock?symbol=${encodeURIComponent(symbol)}`);
+        if (response.ok) {
+          data = await response.json();
+        }
+      } catch (localErr) {
+        console.warn("Local API server offline, falling back to client-side CORS proxy...");
       }
-      const data = await response.json();
+
+      // If local API failed or was offline, use AllOrigins CORS proxy to query Yahoo Finance directly
+      if (!data) {
+        const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=6mo&interval=1d`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
+        
+        const response = await fetch(proxyUrl);
+        if (!response.ok) {
+          throw new Error("CORS proxy service unavailable.");
+        }
+        const proxyData = await response.json();
+        const yahooData = JSON.parse(proxyData.contents);
+
+        if (!yahooData.chart || !yahooData.chart.result) {
+          throw new Error(`Symbol "${symbol}" not found on Yahoo Finance.`);
+        }
+
+        const result = yahooData.chart.result[0];
+        const quote = result.indicators.quote[0];
+        const timestamps = result.timestamp || [];
+        const meta = result.meta;
+
+        const prices = [];
+        for (let i = 0; i < timestamps.length; i++) {
+          if (quote.close[i] !== null && quote.close[i] !== undefined) {
+            const dateObj = new Date(timestamps[i] * 1000);
+            const dateStr = dateObj.toISOString().split('T')[0];
+            prices.push({
+              date: dateStr,
+              open: quote.open[i] || quote.close[i],
+              high: quote.high[i] || quote.close[i],
+              low: quote.low[i] || quote.close[i],
+              close: quote.close[i],
+              volume: quote.volume[i] || 0
+            });
+          }
+        }
+
+        if (prices.length < 2) {
+          throw new Error(`Insufficient data found for symbol ${symbol}`);
+        }
+
+        const tailPrices = prices.slice(-100);
+        const currentPrice = tailPrices[tailPrices.length - 1].close;
+        const prevClose = tailPrices[tailPrices.length - 2]?.close || currentPrice;
+        const change = currentPrice - prevClose;
+        const changePercent = (change / prevClose) * 100;
+        const companyName = meta.longName || symbol;
+
+        data = {
+          symbol,
+          companyName,
+          currentPrice: parseFloat(currentPrice.toFixed(2)),
+          change: parseFloat(change.toFixed(2)),
+          changePercent: parseFloat(changePercent.toFixed(2)),
+          prices: tailPrices
+        };
+      }
       
       state.stock.engine.setHistoricalData(data.prices);
       renderQuoteCard(data);
